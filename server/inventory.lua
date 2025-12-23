@@ -443,7 +443,7 @@ function CreateStoreLog(inventory, item, count, buyer, metadata, itemId)
 end
 
 function LogEvent( source, type, msg )	
-	lib.logger(source or -1, type, 'Inventory', msg)
+	-- lib.logger(source or -1, type, 'Inventory', msg)
 end
 
 function DoMerge(source, data, cb)
