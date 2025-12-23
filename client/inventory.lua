@@ -138,7 +138,7 @@ AddEventHandler("Core:Shared:Ready", function()
 				}, function(cancelled)
 					pcall(function()
 					if Animations and Animations.Emotes then
-						Animations.Emotes:CancelEmote()
+						Animations.Emotes:ForceCancel()
 					end
 				end)
 					cb(not cancelled)
