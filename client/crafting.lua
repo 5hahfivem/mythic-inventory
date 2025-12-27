@@ -288,7 +288,7 @@ RegisterNUICallback("Crafting:End", function(data, cb)
 		SendNUIMessage({
 			type = "END_CRAFTING",
 		})
-		Animations.Emotes:CancelEmote()
+		Animations.Emotes:ForceCancel()
 		if state ~= nil then
 			if LocalPlayer.state.craftingOpen then
 				Crafting.Benches:Open(state) -- Refresh bench bcuz item counts
@@ -303,7 +303,7 @@ RegisterNUICallback("Crafting:Cancel", function(data, cb)
 		cb(state)
 		if state then
 			Progress:Cancel(true)
-			Animations.Emotes:CancelEmote()
+			Animations.Emotes:ForceCancel()
 		end
 		LocalPlayer.state.crafting = false
 	end)
