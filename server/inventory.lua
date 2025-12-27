@@ -20,20 +20,20 @@ local _defInvSettings = {
 }
 
 function split(pString, pPattern)
-	local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
+	local Table = {} -- NOTE: use {n = 0} in Lua-5.0
 	local fpat = "(.-)" .. pPattern
 	local last_end = 1
 	local s, e, cap = pString:find(fpat, 1)
 	while s do
-	   if s ~= 1 or cap ~= "" then
-	  table.insert(Table,cap)
-	   end
-	   last_end = e+1
-	   s, e, cap = pString:find(fpat, last_end)
+		if s ~= 1 or cap ~= "" then
+			table.insert(Table, cap)
+		end
+		last_end = e + 1
+		s, e, cap = pString:find(fpat, last_end)
 	end
 	if last_end <= #pString then
-	   cap = pString:sub(last_end)
-	   table.insert(Table, cap)
+		cap = pString:sub(last_end)
+		table.insert(Table, cap)
 	end
 	return Table
 end
@@ -108,7 +108,7 @@ function RetrieveComponents()
 	Inventory = exports["mythic-base"]:FetchComponent("Inventory")
 	EntityTypes = exports["mythic-base"]:FetchComponent("EntityTypes")
 	Chat = exports["mythic-base"]:FetchComponent("Chat")
-	Wallet = exports["mythic-base"]:FetchComponent("Wallet") 
+	Wallet = exports["mythic-base"]:FetchComponent("Wallet")
 	Execute = exports["mythic-base"]:FetchComponent("Execute")
 	Middleware = exports["mythic-base"]:FetchComponent("Middleware")
 	Crafting = exports["mythic-base"]:FetchComponent("Crafting")
@@ -176,7 +176,9 @@ AddEventHandler("Core:Shared:Ready", function()
 		RegisterCraftingCallbacks()
 
         local f = Banking.Accounts:GetOrganization("government")
-        _govAccount = f.Account
+		if f then
+			_govAccount = f.Account
+		end
 
 		Middleware:Add("Characters:Spawning", function(source)
 			TriggerClientEvent("Inventory:Client:PolySetup", source, _polyInvs)
@@ -305,29 +307,29 @@ function entityPermCheck(source, invType)
 
 	if shittyInvData then
 		return (
-				shittyInvData.restriction == nil
-				or (shittyInvData.restriction.job ~= nil and Jobs.Permissions:HasJob(
-					source,
-					shittyInvData.restriction.job.id,
-					shittyInvData.restriction.job.workplace or false,
-					shittyInvData.restriction.job.grade or false,
-					false,
-					false,
-					shittyInvData.restriction.job.permissionKey or "JOB_STORAGE"
-				) and (not shittyInvData.restriction.job.duty or Player(source).state.onDuty == shittyInvData.restriction.job.id))
-				or (shittyInvData.restriction.state and hasValue(
-					char:GetData("States"),
-					shittyInvData.restriction.state
-				))
-				or (
-					shittyInvData.restriction.rep ~= nil
-					and Reputation:GetLevel(source, shittyInvData.restriction.rep.id) >= shittyInvData.restriction.rep.level
-				)
-				or (shittyInvData.restriction.character ~= nil and shittyInvData.restriction.character == char:GetData(
-					"ID"
-				))
-				or (shittyInvData.restriction.admin and plyr.Permissions:IsAdmin())
+			shittyInvData.restriction == nil
+			or (shittyInvData.restriction.job ~= nil and Jobs.Permissions:HasJob(
+				source,
+				shittyInvData.restriction.job.id,
+				shittyInvData.restriction.job.workplace or false,
+				shittyInvData.restriction.job.grade or false,
+				false,
+				false,
+				shittyInvData.restriction.job.permissionKey or "JOB_STORAGE"
+			) and (not shittyInvData.restriction.job.duty or Player(source).state.onDuty == shittyInvData.restriction.job.id))
+			or (shittyInvData.restriction.state and hasValue(
+				char:GetData("States"),
+				shittyInvData.restriction.state
+			))
+			or (
+				shittyInvData.restriction.rep ~= nil
+				and Reputation:GetLevel(source, shittyInvData.restriction.rep.id) >= shittyInvData.restriction.rep.level
 			)
+			or (shittyInvData.restriction.character ~= nil and shittyInvData.restriction.character == char:GetData(
+				"ID"
+			))
+			or (shittyInvData.restriction.admin and plyr.Permissions:IsAdmin())
+		)
 	else
 		return false
 	end
@@ -357,7 +359,7 @@ function getInventory(src, Owner, Type, limit)
 						if not itemsDatabase[v].isStackable then
 							stack = 1
 						end
-	
+
 						if itemsDatabase[v].isStackable and stack > itemsDatabase[v].isStackable then
 							stack = itemsDatabase[v].isStackable
 						end
@@ -442,7 +444,7 @@ function CreateStoreLog(inventory, item, count, buyer, metadata, itemId)
 	})
 end
 
-function LogEvent( source, type, msg )
+function LogEvent(source, type, msg)
 	if lib and lib.logger then
 		lib.logger(source or -1, type, 'Inventory', msg)
 	end
@@ -452,37 +454,37 @@ function DoMerge(source, data, cb)
 	CreateThread(function()
 		local player = Fetch:Source(source)
 		local char = player:GetData("Character")
-	
+
 		local item = itemsDatabase[data.name]
 		local cash = char:GetData("Cash")
-	
+
 		local entityFrom = LoadedEntitys[tonumber(data.invTypeFrom)]
 		local entityTo = LoadedEntitys[tonumber(data.invTypeTo)]
 	
 		local invWeight = Inventory.Items:GetWeights(data.ownerTo, data.invTypeTo)
 		local totWeight = invWeight + (data.countTo * itemsDatabase[data.name].weight)
-	
+
 		if data.ownerFrom == nil or data.slotFrom == nil or data.invTypeFrom == nil or data.ownerTo == nil or data.slotTo == nil or data.invTypeTo == nil then
 			cb({ reason = "Invalid Move Data" })
 			sendRefreshForClient(source, data.ownerFrom, data.invTypeFrom, data.slotFrom)
 			sendRefreshForClient(source, data.ownerTo, data.invTypeTo, data.slotTo)
 			return
 		end
-	
+
 		if totWeight > getCapacity(data.invTypeTo, data.vehClassTo, data.vehModelTo, data.capacityOverrideTo) and data.ownerFrom ~= data.ownerTo then
 			cb({ reason = "Inventory Over Weight" })
 			sendRefreshForClient(source, data.ownerTo, data.invTypeTo, data.slotTo)
 			sendRefreshForClient(source, data.ownerFrom, data.invTypeFrom, data.slotFrom)
 			return
 		end
-	
+
 		if data.countTo <= 0 then
 			cb({ reason = "Can't Move 0 - Naughty Boy" })
 			sendRefreshForClient(source, data.ownerFrom, data.invTypeFrom, data.slotFrom)
 			sendRefreshForClient(source, data.ownerTo, data.invTypeTo, data.slotTo)
 			return
 		end
-	
+
 		if entityFrom.shop then
 			local cost = math.ceil((item.price * tonumber(data.countTo)))
 			local paymentType = (cash >= cost and 'cash' or (Banking.Balance:Has(char:GetData("BankAccount"), cost) and 'bank' or nil))
@@ -496,7 +498,7 @@ function DoMerge(source, data, cb)
 					and (not item.qualification or hasValue(char:GetData("Qualifications"), item.qualification))
 				then
 					local paid = entityFrom.free
-	
+
 					if not paid then
 						if paymentType == 'cash' then
 							paid = Wallet:Modify(source, -(math.abs(cost)))
@@ -509,7 +511,7 @@ function DoMerge(source, data, cb)
 							})
 							Phone.Notification:Add(source, "Bill Payment Successful", false, os.time() * 1000, 3000, "bank", {})
 						end
-	
+
 						if paid then
 							pendingShopDeposits[storeBankAccounts[entityFrom.id]] = pendingShopDeposits[storeBankAccounts[entityFrom.id]] or { amount = 0, transactions = 0 }
 							pendingShopDeposits[storeBankAccounts[entityFrom.id]].amount = pendingShopDeposits[storeBankAccounts[entityFrom.id]].amount + math.floor( (cost * STORE_SHARE_AMOUNT) )
@@ -520,7 +522,7 @@ function DoMerge(source, data, cb)
 							pendingShopDeposits[_govAccount].transactions = pendingShopDeposits[_govAccount].transactions + 1
 						end
 					end
-	
+
 					if paid then
 						local insData = Inventory:CreateItem(char:GetData("SID"), data.name, data.countTo, data.slotTo, {}, data.invTypeTo, false)
 						CreateStoreLog(data.ownerFrom, data.name, data.countTo or 1, char:GetData("SID"), insData.metadata, insData.id)
@@ -532,7 +534,7 @@ function DoMerge(source, data, cb)
 							math.abs(cost)
 						))
 					end
-	
+
 					sendRefreshForClient(source, data.ownerFrom, data.invTypeFrom, data.slotFrom)
 					sendRefreshForClient(source, data.ownerTo, data.invTypeTo, data.slotTo)
 					return cb({ success = true })
@@ -565,7 +567,7 @@ function DoMerge(source, data, cb)
 				data.slotFrom,
 				data.name,
 			})
-			
+
 			if data.ownerFrom ~= data.ownerTo then
 				if data.invTypeFrom == 1 then
 					local plyr = Fetch:SID(data.ownerFrom)
